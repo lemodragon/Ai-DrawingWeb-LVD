@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI绘画·薰衣草™</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .input-style {
+            background: rgba(218, 141, 170, 0.094);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .input-style:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+        .btn-generate {
+            background: linear-gradient(45deg, #1a55dc, #ef3c8c);
+            transition: all 0.3s ease;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px #0eadf726;
+        }
+        .error-message {
+            background-color: rgba(255, 182, 193, 0.2);
+            border: 1px solid #eb082a;
+            color: #b20303;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="container max-w-6xl mx-auto p-6">
+        <header class="flex items-center justify-between mb-10">
+            <img src="https://img.picgo.net/2024/08/30/Lavender8e6d9fb25a16f7896.png" alt="AI Logo" class="w-16 h-16">
+            <h1 class="text-4xl font-bold text-gray-800">AI绘画·薰衣草™</h1>
+            <div class="w-16"></div> <!-- 为了保持标题居中 -->
+        </header>
+
+        <main class="glass-effect p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <label for="model" class="block text-sm font-medium text-gray-700 mb-2">选择模型</label>
+                    <select id="model" class="w-full p-3 input-style text-gray-700">
+                        <option value="DALL-E 3">DALL-E 3 (Stable Diffusion XL Base 1.0)</option>
+                        <option value="DALL-E 2">DALL-E 2 (Stable Diffusion XL Lightning)</option>
+                        <option value="DALL-E 1">DALL-E 1 (DreamShaper 8 LCM)</option>
+                        <option value="FLUX">FLUX (FLUX.1-schnell)</option>
+                        <option value="SD 3">SD 3 (Stable Diffusion 3 Medium)</option>
+                        <option value="SD XL">SD XL (Stable Diffusion XL Base 1.0)</option>
+                        <option value="SD 2">SD 2 (Stable Diffusion 2.1)</option>
+                        <option value="SD Turbo">SD Turbo (Stable Diffusion Turbo)</option>
+                        <option value="SD XL Turbo">SD XL Turbo (Stable Diffusion XL Turbo)</option>
+                        <option value="SD XL Lightning">SD XL Lightning (SDXL-Lightning)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="size" class="block text-sm font-medium text-gray-700 mb-2">选择尺寸</label>
+                    <select id="size" class="w-full p-3 input-style text-gray-700">
+                        <option value="1024x1024">1:1 (1024x1024)</option>
+                        <option value="1024x2048">1:2 (1024x2048)</option>
+                        <option value="2048x1024">2:1 (2048x1024)</option>
+                        <option value="1536x1024">3:2 (1536x1024)</option>
+                        <option value="1024x1536">2:3 (1024x1536)</option>
+                        <option value="1536x1152">4:3 (1536x1152)</option>
+                        <option value="1152x1536">3:4 (1152x1536)</option>
+                        <option value="2048x1152">16:9 (2048x1152)</option>
+                        <option value="1152x2048">9:16 (1152x2048)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label for="prompt" class="block text-sm font-medium text-gray-700 mb-2">输入提示词</label>
+                <textarea id="prompt" rows="4" class="w-full p-3 input-style text-gray-700 resize-none" placeholder="请描述您想要生成的图像..."></textarea>
+            </div>
+
+            <button id="generate" class="w-full btn-generate text-white py-3 px-6 rounded-md text-lg font-semibold">生成图像</button>
+
+            <div id="error" class="mt-4 p-3 error-message rounded hidden"></div>
+
+            <div id="loading" class="mt-6 text-center hidden">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                <p class="mt-2 text-gray-600">正在生成图像，请稍候...</p>
+            </div>
+
+            <div id="result" class="mt-8 hidden">
+                <img id="generatedImage" class="w-full rounded-lg shadow-xl" alt="Generated Image">
+            </div>
+        </main>
+
+        <footer class="mt-10 text-center">
+            <a href="/gallery" class="text-blue-600 hover:underline text-lg font-semibold">查看图片展览</a>
+            <p class="mt-4 text-sm text-gray-600">提示：尝试使用详细的描述和特定的风格来获得更精确的结果。</p>
+            <p class="mt-2 text-xs text-gray-500">© 2024 薰衣草Pub提供技术支持，保留所有权利。</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('generate').addEventListener('click', async function() {
+            const model = document.getElementById('model').value;
+            const size = document.getElementById('size').value;
+            const prompt = document.getElementById('prompt').value;
+
+            if (!prompt) {
+                showError('请输入提示词');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model, prompt, size }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('图像生成失败');
+                }
+
+                const data = await response.json();
+                showResult(data.imageUrl);
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+        }
+
+        function showResult(imageUrl) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            const resultElement = document.getElementById('result');
+            resultElement.classList.remove('hidden');
+            document.getElementById('generatedImage').src = imageUrl;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 图像展览</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .input-style {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .input-style:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+        .btn-generate {
+            background: linear-gradient(45deg, #4776E6, #8E54E9);
+            transition: all 0.3s ease;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">AI 图像展览</h1>
+        
+        <div id="gallery" class="gallery-container"></div>
+        
+        <div id="pagination" class="mt-8 flex justify-center space-x-2"></div>
+        
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p class="mt-2 text-gray-600">正在加载图片，请稍候...</p>
+        </div>
+        
+        <div id="error" class="mt-4 text-red-500 hidden"></div>
+        
+        <div class="mt-8 text-center">
+            <a href="/" class="text-blue-500 hover:underline text-lg font-semibold">返回生成器</a>
+        </div>
+        <footer class="mt-10 text-center">
+            <p class="mt-4 text-sm text-gray-600">本工具仅用于学习和研究目的。请勿生成或使用有害内容。</p>
+            <p class="mt-2 text-xs text-gray-500">© 2024 薰衣草Pub提供技术支持，保留所有权利。</p>
+        </footer>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script>
+        const galleryContainer = document.getElementById('gallery');
+        const paginationContainer = document.getElementById('pagination');
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.getElementById('error');
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeModal = document.getElementsByClassName("close")[0];
+        
+        const imagesPerPage = 16;
+        let currentPage = 1;
+        let allImages = [];
+
+        async function fetchImages() {
+            loadingElement.classList.remove('hidden');
+            errorElement.classList.add('hidden');
+            try {
+                const response = await fetch('/gallery-images');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch images');
+                }
+                allImages = await response.json();
+                allImages.reverse(); // Reverse the array to show newest images first
+                displayImages();
+                setupPagination();
+            } catch (error) {
+                errorElement.textContent = '加载图片时出错：' + error.message;
+                errorElement.classList.remove('hidden');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        function displayImages() {
+            const startIndex = (currentPage - 1) * imagesPerPage;
+            const endIndex = startIndex + imagesPerPage;
+            const imagesToDisplay = allImages.slice(startIndex, endIndex);
+
+            galleryContainer.innerHTML = '';
+            imagesToDisplay.forEach(imageUrl => {
+                const imgElement = document.createElement('div');
+                imgElement.className = 'gallery-item';
+                imgElement.innerHTML = `<img src="${imageUrl}" alt="AI Generated Image" loading="lazy">`;
+                imgElement.onclick = () => openModal(imageUrl);
+                galleryContainer.appendChild(imgElement);
+            });
+        }
+
+        function setupPagination() {
+            const pageCount = Math.ceil(allImages.length / imagesPerPage);
+            paginationContainer.innerHTML = '';
+            
+            for (let i = 1; i <= pageCount; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                button.className = `px-3 py-1 rounded ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`;
+                button.onclick = () => {
+                    currentPage = i;
+                    displayImages();
+                    setupPagination();
+                };
+                paginationContainer.appendChild(button);
+            }
+        }
+
+        function openModal(imageUrl) {
+            modal.style.display = "block";
+            modalImg.src = imageUrl;
+        }
+
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        fetchImages();
+    </script>
+</body>
+</html>

@@ -1,10 +1,10 @@
 import indexHtml from './index.html';
 import galleryHtml from './gallery.html';
 
-const DALLE_API_URL = 'https://example.com/v1/images/generations';  // 这里为你的DALL-E API URL
+const DALLE_API_URL = 'https://cloudflare.lolita.pp.ua/v1/images/generations';
 const DALLE_API_KEY = 'CF-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
-const FLUX_API_URL = 'https://example.com/v1/chat/completions';    // 这里为你的“硅基流动” API URL
+const FLUX_API_URL = 'https://siliconflow.cute.pp.ua/v1/chat/completions';
 const FLUX_API_KEY = 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 const IMAGE_HOST_API_URL = 'https://www.picgo.net/api/1/upload';  // 这里为你的图床API URL

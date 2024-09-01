@@ -8,7 +8,8 @@ AI绘画·薰衣草™ 是一个基于 Cloudflare Workers 的 Web 应用，它�
 
 <img width="1217" alt="屏幕截图 2024-08-31 094113" src="https://github.com/user-attachments/assets/9e1a6337-c7c4-44f9-ae02-f3eb5f431884">
 <img width="1217" alt="屏幕截图 2024-08-31 094113" src="https://github.com/user-attachments/assets/6893d582-c01c-4570-88de-eed6eac860f5">
-<img width="1197" alt="屏幕截图 2024-08-31 094245" src="https://github.com/user-attachments/assets/d33c266d-020b-4d3c-b998-b250c4ff7a20">
+<img width="1252" alt="image" src="https://github.com/user-attachments/assets/0a36486b-89bd-4e3f-8a86-dd4286863c6b">
+
 
 ## 特性
 - 多种 AI 模型选择

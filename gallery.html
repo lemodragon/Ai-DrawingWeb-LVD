@@ -89,6 +89,20 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .pagination-arrow {
+            background-color: #3B82F6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+        }
+        .pagination-arrow:hover {
+            background-color: #2563EB;
+        }
+        .pagination-arrow:disabled {
+            background-color: #9CA3AF;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -132,6 +146,7 @@
         const imagesPerPage = 16;
         let currentPage = 1;
         let allImages = [];
+        const maxPageButtons = 5; // 最多显示的页码按钮数
 
         async function fetchImages() {
             loadingElement.classList.remove('hidden');
@@ -172,7 +187,27 @@
             const pageCount = Math.ceil(allImages.length / imagesPerPage);
             paginationContainer.innerHTML = '';
             
-            for (let i = 1; i <= pageCount; i++) {
+            // 添加左箭头
+            const leftArrow = document.createElement('button');
+            leftArrow.innerHTML = '&larr;';
+            leftArrow.className = 'pagination-arrow';
+            leftArrow.disabled = currentPage === 1;
+            leftArrow.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayImages();
+                    setupPagination();
+                }
+            };
+            paginationContainer.appendChild(leftArrow);
+
+            // 计算要显示的页码范围
+            let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            let endPage = Math.min(pageCount, startPage + maxPageButtons - 1);
+            startPage = Math.max(1, endPage - maxPageButtons + 1);
+
+            // 添加页码按钮
+            for (let i = startPage; i <= endPage; i++) {
                 const button = document.createElement('button');
                 button.innerText = i;
                 button.className = `px-3 py-1 rounded ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`;
@@ -183,6 +218,20 @@
                 };
                 paginationContainer.appendChild(button);
             }
+
+            // 添加右箭头
+            const rightArrow = document.createElement('button');
+            rightArrow.innerHTML = '&rarr;';
+            rightArrow.className = 'pagination-arrow';
+            rightArrow.disabled = currentPage === pageCount;
+            rightArrow.onclick = () => {
+                if (currentPage < pageCount) {
+                    currentPage++;
+                    displayImages();
+                    setupPagination();
+                }
+            };
+            paginationContainer.appendChild(rightArrow);
         }
 
         function openModal(imageUrl) {

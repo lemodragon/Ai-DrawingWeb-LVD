@@ -46,7 +46,7 @@ export default {
 
         let imageUrl;
 
-        if (['DALL-E 3', 'DALL-E 2', 'DALL-E 1'].includes(model)) {
+        if (['DALL-E 3', 'DALL-E 2', 'DALL-E 1', 'FLUX-CF'].includes(model)) {
           imageUrl = await generateDalleImage(model, prompt, size);
         } else {
           imageUrl = await generateFluxImage(model, prompt, size);
@@ -112,7 +112,9 @@ export default {
 
 async function generateDalleImage(model, prompt, size) {
   const dalleModel = model === 'DALL-E 3' ? 'dall-e-3' : 
-                     model === 'DALL-E 2' ? 'dall-e-2' : 'dall-e-1';
+                     model === 'DALL-E 2' ? 'dall-e-2' : 
+                     model === 'DALL-E 1' ? 'dall-e-1' :
+                     model === 'FLUX-CF' ? 'cf-flux' : 'dall-e-3';
   const response = await fetch(DALLE_API_URL, {
     method: 'POST',
     headers: {

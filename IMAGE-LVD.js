@@ -134,13 +134,14 @@ async function generateDalleImage(model, prompt, size) {
 }
 
 async function generateFluxImage(model, prompt, size) {
-  const fluxModel = model === 'FLUX' ? 'flux' :
+  const fluxModel = model === 'FLUX.S' ? 'flux.s' :
+                    model === 'FLUX.D' ? 'flux.d' :
                     model === 'SD 3' ? 'sd3' :
                     model === 'SD XL' ? 'sdxl' :
                     model === 'SD 2' ? 'sd2' :
                     model === 'SD Turbo' ? 'sdt' :
                     model === 'SD XL Turbo' ? 'sdxlt' :
-                    model === 'SD XL Lightning' ? 'sdxll' : 'flux';
+                    model === 'SD XL Lightning' ? 'sdxll' : 'flux.s';
   
   console.log(`Selected model for FLUX: ${fluxModel}`);
 
